@@ -37,11 +37,25 @@
 
 ## 작업 규칙
 
+### 브랜치와 PR
+
+- `main` 에 직접 푸시하지 않는다. 브랜치 보호 규칙으로 막혀 있다
+- 작업마다 브랜치를 판다 — `feat/드롭-구매`, `fix/재고-경합`, `chore/의존성-갱신`, `docs/adr-001`
+- PR 본문에는 **왜 이렇게 했는지 / 어떻게 검증했는지 / 남은 것** 을 적는다. 변경 목록만 나열하지 않는다
+- 머지는 squash 로 한다. 커밋 히스토리를 PR 단위로 유지한다
+- CI 가 통과해야 머지할 수 있다
+
 ### 커밋
 
 - 커밋 메시지는 한국어로 쓴다. 형식은 `type: 요약` (`feat`, `fix`, `refactor`, `test`, `docs`, `chore`)
 - 커밋 신원은 이 레포에 로컬로 고정돼 있다 (`jsj1215 <57480220+jsj1215@users.noreply.github.com>`). 바꾸지 않는다
 - 사용자가 요청하지 않으면 커밋·푸시하지 않는다
+
+### 버전
+
+- 외부 의존성과 GitHub Actions 버전은 **기억으로 적지 않는다.** 최신 버전을 조회해서 확인하고 박는다
+  - `gh api repos/<org>/<repo>/releases/latest --jq .tag_name`
+- 라이브러리 버전은 가능하면 Spring Boot BOM 에 위임한다. `gradle.properties` 에 따로 고정하는 것은 BOM 이 관리하지 않는 것만
 
 ### 코드
 
@@ -50,6 +64,17 @@
 - `domain` 에 스프링·JPA 외 프레임워크를 끌어들이지 않는다
 - 판매 단위는 상품이 아니라 **SKU(상품 × 사이즈 × 컬러)** 다. 재고는 SKU 단위로 잡는다
 - 재고·대기열 Redis 키는 evict 되면 안 된다. `maxmemory-policy` 는 `noeviction` 을 유지한다
+
+### 테스트
+
+- 인메모리 DB(H2 등)를 쓰지 않는다. **Testcontainers 로 실제 MySQL·Redis 를 띄운다**
+  - 이 프로젝트의 핵심 검증이 동시성이고, 락 동작과 제약 위반 타이밍은 DB 구현마다 다르다
+- 동시성 테스트는 `CountDownLatch` 로 스레드를 한 지점에 모았다가 동시에 푼다.
+  검증은 **성공 건수 + 잔여 재고 == 초기 재고** 형태로, 최종 상태의 정합을 본다
+- 테스트 컨테이너 이미지 태그는 `latest` 를 쓰지 않는다. 운영 compose 와 같은 버전으로 고정한다
+- 테스트 간 격리는 `DatabaseCleanUp` / `RedisCleanUp` 으로 한다
+- Redis 테스트 설정은 replica 주소가 master 와 같은 컨테이너다. **복제 지연 관련 동작은 테스트로 잡히지 않으니**
+  로컬 docker 의 실제 replica 로 따로 확인한다
 
 ### 문서
 

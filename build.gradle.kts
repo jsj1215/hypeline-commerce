@@ -50,7 +50,8 @@ subprojects {
     dependencyManagement {
         imports {
             mavenBom("org.springframework.cloud:spring-cloud-dependencies:${project.properties["springCloudDependenciesVersion"]}")
-            mavenBom("org.testcontainers:testcontainers-bom:${project.properties["testcontainersVersion"]}")
+            // Testcontainers 는 Spring Boot BOM 이 관리한다.
+            // 2.x 는 코어 아티팩트만 존재하고 mysql/junit-jupiter 모듈이 없어, BOM 을 따로 올리면 버전이 갈라진다.
         }
     }
 
@@ -69,7 +70,7 @@ subprojects {
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         testRuntimeOnly("com.mysql:mysql-connector-j")
         testImplementation("org.springframework.boot:spring-boot-starter-test")
-        testImplementation("org.mockito:mockito-core:${project.properties["mockitoVersion"]}")
+        testImplementation("org.mockito:mockito-core")
         testImplementation("org.instancio:instancio-junit:${project.properties["instancioJUnitVersion"]}")
         // Testcontainers
         testImplementation("org.springframework.boot:spring-boot-testcontainers")
