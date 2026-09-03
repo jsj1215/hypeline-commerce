@@ -1,0 +1,117 @@
+server:
+  port: 8080
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 300          # SSE 커넥션이 워커 스레드를 점유하지 않도록 async 처리 전제
+      min-spare: 30
+    connection-timeout: 20s
+    max-connections: 16384
+    accept-count: 200
+    keep-alive-timeout: 60s
+  max-http-request-header-size: 8KB
+
+spring:
+  application:
+    name: commerce-api
+  profiles:
+    active: local
+  config:
+    import:
+      - jpa.yml
+      - redis.yml
+      - kafka.yml
+      - logging.yml
+      - monitoring.yml
+  mvc:
+    async:
+      request-timeout: -1   # SSE 는 서버가 명시적으로 끊는다.
+  threads:
+    virtual:
+      enabled: false
+
+springdoc:
+  use-fqn: true
+  swagger-ui:
+    path: /swagger-ui.html
+
+# --- 도메인 정책 ---
+hypeline:
+  waitroom:
+    admit-batch-size: 500        # 스케줄러 1회당 입장시킬 인원
+    admit-interval-ms: 200       # 입장 처리 주기
+    token-ttl-seconds: 180       # 입장 토큰 유효시간
+  drop:
+    stock-key-shard-count: 16    # 단일 재고 키 핫스팟 분산용 샤드 수
+  sse:
+    heartbeat-interval-ms: 15000 # 프록시 idle timeout 방어용 heartbeat
+    max-connections-per-instance: 20000
+  idempotency:
+    ttl-seconds: 600
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local, test
+  cloud:
+    openfeign:
+      client:
+        config:
+          pgClient:
+            connect-timeout: 1000
+            read-timeout: 3000
+
+pg:
+  base-url: http://localhost:8082
+  callback-url: http://localhost:8080/api/v1/payments/callback
+
+resilience4j:
+  timelimiter:
+    instances:
+      pgTimeLimiter:
+        timeout-duration: 4s
+        cancel-running-future: true
+  retry:
+    instances:
+      pgRetry:
+        max-attempts: 3
+        wait-duration: 500ms
+        retry-exceptions:
+          - feign.RetryableException
+          - feign.FeignException$InternalServerError
+          - feign.FeignException$BadGateway
+          - feign.FeignException$ServiceUnavailable
+          - feign.FeignException$GatewayTimeout
+        fail-after-max-attempts: true
+  circuitbreaker:
+    instances:
+      pgCircuit:
+        sliding-window-size: 20
+        minimum-number-of-calls: 20
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 5
+        slow-call-duration-threshold: 3s
+        slow-call-rate-threshold: 50
+        ignore-exceptions:
+          - feign.FeignException$BadRequest
+          - feign.FeignException$Forbidden
+          - feign.FeignException$NotFound
+          - feign.FeignException$Conflict
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prd
+
+springdoc:
+  api-docs:
+    enabled: false

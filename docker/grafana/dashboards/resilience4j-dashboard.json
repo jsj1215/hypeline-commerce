@@ -1,0 +1,790 @@
+{
+  "uid": "resilience4j-dashboard",
+  "title": "Resilience4j Dashboard",
+  "tags": ["resilience4j", "circuit-breaker", "retry", "payment"],
+  "timezone": "Asia/Seoul",
+  "refresh": "5s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 100,
+      "title": "=== Circuit Breaker ===",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false
+    },
+    {
+      "id": 1,
+      "title": "Circuit Breaker State",
+      "description": "0 = CLOSED (정상), 1 = OPEN (차단), 2 = HALF_OPEN (시험)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "resilience4j_circuitbreaker_state{name=\"pgCircuit\"}",
+          "legendFormat": "pgCircuit state"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "stacking": { "mode": "none" },
+            "spanNulls": true
+          },
+          "min": 0,
+          "max": 2,
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "CLOSED", "color": "green" } } },
+            { "type": "value", "options": { "1": { "text": "OPEN", "color": "red" } } },
+            { "type": "value", "options": { "2": { "text": "HALF_OPEN", "color": "orange" } } }
+          ],
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 2 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Circuit Breaker State (Current)",
+      "description": "현재 서킷 브레이커 상태를 표시",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "resilience4j_circuitbreaker_state{name=\"pgCircuit\"}",
+          "legendFormat": "pgCircuit",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "CLOSED", "color": "green" } } },
+            { "type": "value", "options": { "1": { "text": "OPEN", "color": "red" } } },
+            { "type": "value", "options": { "2": { "text": "HALF_OPEN", "color": "orange" } } }
+          ],
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Failure Rate / Slow Call Rate (%)",
+      "description": "실패율과 느린 호출 비율 (임계치: 50%)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "resilience4j_circuitbreaker_failure_rate{name=\"pgCircuit\"}",
+          "legendFormat": "Failure Rate"
+        },
+        {
+          "expr": "resilience4j_circuitbreaker_slow_call_rate{name=\"pgCircuit\"}",
+          "legendFormat": "Slow Call Rate"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "stacking": { "mode": "none" },
+            "spanNulls": true,
+            "thresholdsStyle": { "mode": "dashed" }
+          },
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Circuit Breaker Calls (Rate/sec)",
+      "description": "서킷 브레이커 호출 결과별 초당 비율",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "rate(resilience4j_circuitbreaker_calls_seconds_count{name=\"pgCircuit\", kind=\"successful\"}[1m])",
+          "legendFormat": "Successful"
+        },
+        {
+          "expr": "rate(resilience4j_circuitbreaker_calls_seconds_count{name=\"pgCircuit\", kind=\"failed\"}[1m])",
+          "legendFormat": "Failed"
+        },
+        {
+          "expr": "rate(resilience4j_circuitbreaker_not_permitted_calls_total{name=\"pgCircuit\"}[1m])",
+          "legendFormat": "Not Permitted (OPEN)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "stacking": { "mode": "none" },
+            "spanNulls": true
+          },
+          "unit": "reqps"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Successful" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Failed" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Not Permitted (OPEN)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "title": "Circuit Breaker Calls (Total)",
+      "description": "서킷 브레이커 호출 누적 수",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "resilience4j_circuitbreaker_calls_seconds_count{name=\"pgCircuit\", kind=\"successful\"}",
+          "legendFormat": "Successful",
+          "instant": true
+        },
+        {
+          "expr": "resilience4j_circuitbreaker_calls_seconds_count{name=\"pgCircuit\", kind=\"failed\"}",
+          "legendFormat": "Failed",
+          "instant": true
+        },
+        {
+          "expr": "resilience4j_circuitbreaker_not_permitted_calls_total{name=\"pgCircuit\"}",
+          "legendFormat": "Not Permitted",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": null }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Successful" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Failed" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Not Permitted" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "title": "Slow Calls Count",
+      "description": "느린 호출(2초 초과) 성공/실패 수",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "resilience4j_circuitbreaker_slow_calls{name=\"pgCircuit\", kind=\"successful\"}",
+          "legendFormat": "Slow Successful"
+        },
+        {
+          "expr": "resilience4j_circuitbreaker_slow_calls{name=\"pgCircuit\", kind=\"failed\"}",
+          "legendFormat": "Slow Failed"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 50,
+            "stacking": { "mode": "normal" },
+            "spanNulls": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Slow Successful" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Slow Failed" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "title": "Circuit Breaker Call Duration (Avg)",
+      "description": "서킷 브레이커 호출 평균 소요 시간",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 17 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "rate(resilience4j_circuitbreaker_calls_seconds_sum{name=\"pgCircuit\", kind=\"successful\"}[1m]) / rate(resilience4j_circuitbreaker_calls_seconds_count{name=\"pgCircuit\", kind=\"successful\"}[1m])",
+          "legendFormat": "Avg Successful Duration"
+        },
+        {
+          "expr": "rate(resilience4j_circuitbreaker_calls_seconds_sum{name=\"pgCircuit\", kind=\"failed\"}[1m]) / rate(resilience4j_circuitbreaker_calls_seconds_count{name=\"pgCircuit\", kind=\"failed\"}[1m])",
+          "legendFormat": "Avg Failed Duration"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "stacking": { "mode": "none" },
+            "spanNulls": true,
+            "thresholdsStyle": { "mode": "dashed" }
+          },
+          "unit": "s",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 2 },
+              { "color": "red", "value": 3 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 200,
+      "title": "=== Retry ===",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 },
+      "collapsed": false
+    },
+    {
+      "id": 8,
+      "title": "Retry Calls (Rate/sec)",
+      "description": "재시도 결과별 초당 비율",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "rate(resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"successful_without_retry\"}[1m])",
+          "legendFormat": "Success (no retry)"
+        },
+        {
+          "expr": "rate(resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"successful_with_retry\"}[1m])",
+          "legendFormat": "Success (with retry)"
+        },
+        {
+          "expr": "rate(resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"failed_with_retry\"}[1m])",
+          "legendFormat": "Failed (after retry)"
+        },
+        {
+          "expr": "rate(resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"failed_without_retry\"}[1m])",
+          "legendFormat": "Failed (no retry)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "stacking": { "mode": "none" },
+            "spanNulls": true
+          },
+          "unit": "reqps"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Success (no retry)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Success (with retry)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Failed (after retry)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Failed (no retry)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "title": "Retry Calls (Total)",
+      "description": "재시도 결과별 누적 수",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"successful_without_retry\"}",
+          "legendFormat": "Success (no retry)",
+          "instant": true
+        },
+        {
+          "expr": "resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"successful_with_retry\"}",
+          "legendFormat": "Success (with retry)",
+          "instant": true
+        },
+        {
+          "expr": "resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"failed_with_retry\"}",
+          "legendFormat": "Failed (after retry)",
+          "instant": true
+        },
+        {
+          "expr": "resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"failed_without_retry\"}",
+          "legendFormat": "Failed (no retry)",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": null }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Success (no retry)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Success (with retry)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Failed (after retry)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Failed (no retry)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "title": "Retry Success Rate (%)",
+      "description": "Retry 적용 후 전체 성공률 (이론적 60% → ~93.6%)",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 34 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "(resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"successful_without_retry\"} + resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"successful_with_retry\"}) / (resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"successful_without_retry\"} + resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"successful_with_retry\"} + resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"failed_with_retry\"} + resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"failed_without_retry\"}) * 100",
+          "legendFormat": "Success Rate",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 50 },
+              { "color": "yellow", "value": 70 },
+              { "color": "green", "value": 90 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "Retry Improvement Effect",
+      "description": "Retry로 구제된 요청 비율",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 34 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"successful_with_retry\"} / (resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"successful_with_retry\"} + resilience4j_retry_calls_total{name=\"pgRetry\", kind=\"failed_with_retry\"}) * 100",
+          "legendFormat": "Retry Recovery Rate",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 30 },
+              { "color": "green", "value": 60 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 300,
+      "title": "=== TimeLimiter ===",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 42 },
+      "collapsed": false
+    },
+    {
+      "id": 12,
+      "title": "TimeLimiter Calls (Rate/sec)",
+      "description": "TimeLimiter 결과별 초당 비율 (7초 제한)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 43 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "rate(resilience4j_timelimiter_calls_total{name=\"pgTimeLimiter\", kind=\"successful\"}[1m])",
+          "legendFormat": "Successful"
+        },
+        {
+          "expr": "rate(resilience4j_timelimiter_calls_total{name=\"pgTimeLimiter\", kind=\"timeout\"}[1m])",
+          "legendFormat": "Timeout"
+        },
+        {
+          "expr": "rate(resilience4j_timelimiter_calls_total{name=\"pgTimeLimiter\", kind=\"failed\"}[1m])",
+          "legendFormat": "Failed"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "stacking": { "mode": "none" },
+            "spanNulls": true
+          },
+          "unit": "reqps"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Successful" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Timeout" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Failed" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "title": "TimeLimiter Calls (Total)",
+      "description": "TimeLimiter 결과별 누적 수",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 43 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "resilience4j_timelimiter_calls_total{name=\"pgTimeLimiter\", kind=\"successful\"}",
+          "legendFormat": "Successful",
+          "instant": true
+        },
+        {
+          "expr": "resilience4j_timelimiter_calls_total{name=\"pgTimeLimiter\", kind=\"timeout\"}",
+          "legendFormat": "Timeout",
+          "instant": true
+        },
+        {
+          "expr": "resilience4j_timelimiter_calls_total{name=\"pgTimeLimiter\", kind=\"failed\"}",
+          "legendFormat": "Failed",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": null }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Successful" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Timeout" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Failed" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 400,
+      "title": "=== Payment API ===",
+      "type": "row",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 51 },
+      "collapsed": false
+    },
+    {
+      "id": 14,
+      "title": "Payment API Response Time (p50 / p95 / p99)",
+      "description": "결제 API 응답 시간 분포",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 52 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(http_server_requests_seconds_bucket{uri=~\"/api/v[12]/payments.*\"}[1m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{uri=~\"/api/v[12]/payments.*\"}[1m]))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(http_server_requests_seconds_bucket{uri=~\"/api/v[12]/payments.*\"}[1m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "stacking": { "mode": "none" },
+            "spanNulls": true,
+            "thresholdsStyle": { "mode": "dashed" }
+          },
+          "unit": "s",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 3 },
+              { "color": "red", "value": 7 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 15,
+      "title": "Payment API Request Rate (per sec)",
+      "description": "결제 API 초당 요청 수 (성공/실패 구분)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 52 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{uri=~\"/api/v[12]/payments.*\", status=~\"2..\"}[1m]))",
+          "legendFormat": "2xx (Success)"
+        },
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{uri=~\"/api/v[12]/payments.*\", status=~\"4..\"}[1m]))",
+          "legendFormat": "4xx (Client Error)"
+        },
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{uri=~\"/api/v[12]/payments.*\", status=~\"5..\"}[1m]))",
+          "legendFormat": "5xx (Server Error)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "stacking": { "mode": "none" },
+            "spanNulls": true
+          },
+          "unit": "reqps"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "2xx (Success)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "4xx (Client Error)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "5xx (Server Error)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "title": "Order API Response Time (p50 / p95 / p99)",
+      "description": "주문 API 응답 시간 분포",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 60 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(http_server_requests_seconds_bucket{uri=~\"/api/v[12]/orders.*\"}[1m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{uri=~\"/api/v[12]/orders.*\"}[1m]))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(http_server_requests_seconds_bucket{uri=~\"/api/v[12]/orders.*\"}[1m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "stacking": { "mode": "none" },
+            "spanNulls": true,
+            "thresholdsStyle": { "mode": "dashed" }
+          },
+          "unit": "s",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 3 },
+              { "color": "red", "value": 7 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 17,
+      "title": "Order API Request Rate (per sec)",
+      "description": "주문 API 초당 요청 수 (성공/실패 구분)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 60 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{uri=~\"/api/v[12]/orders.*\", status=~\"2..\"}[1m]))",
+          "legendFormat": "2xx (Success)"
+        },
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{uri=~\"/api/v[12]/orders.*\", status=~\"4..\"}[1m]))",
+          "legendFormat": "4xx (Client Error)"
+        },
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{uri=~\"/api/v[12]/orders.*\", status=~\"5..\"}[1m]))",
+          "legendFormat": "5xx (Server Error)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "stacking": { "mode": "none" },
+            "spanNulls": true
+          },
+          "unit": "reqps"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "2xx (Success)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "4xx (Client Error)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "5xx (Server Error)" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          }
+        ]
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1
+}

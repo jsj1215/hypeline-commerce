@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: commerce-batch
+  profiles:
+    active: local
+  config:
+    import:
+      - jpa.yml
+      - redis.yml
+      - logging.yml
+      - monitoring.yml
+  batch:
+    job:
+      enabled: false   # 실행할 Job 은 --spring.batch.job.name= 으로 지정한다.
+    jdbc:
+      initialize-schema: always
+
+management:
+  server:
+    port: 8093
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local, test

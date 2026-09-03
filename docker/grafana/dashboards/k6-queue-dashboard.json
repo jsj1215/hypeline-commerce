@@ -1,0 +1,484 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 50 }, { "color": "red", "value": 200 }] },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Active VUs",
+      "type": "stat",
+      "targets": [{ "expr": "k6_vus", "legendFormat": "VUs", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 0.01 }] },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "HTTP Error Rate",
+      "type": "stat",
+      "targets": [{ "expr": "rate(k6_http_req_failed_total[1m]) / rate(k6_http_reqs_total[1m])", "legendFormat": "error rate", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }] },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Request Rate (RPS)",
+      "type": "stat",
+      "targets": [{ "expr": "rate(k6_http_reqs_total[30s])", "legendFormat": "RPS", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 100 }, { "color": "red", "value": 500 }] },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "HTTP p95 Latency",
+      "type": "stat",
+      "targets": [{ "expr": "histogram_quantile(0.95, rate(k6_http_req_duration_seconds_bucket[30s])) * 1000", "legendFormat": "p95", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "id": 5,
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Total Requests",
+      "type": "stat",
+      "targets": [{ "expr": "k6_http_reqs_total", "legendFormat": "total", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "id": 6,
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Iterations",
+      "type": "stat",
+      "targets": [{ "expr": "k6_iterations_total", "legendFormat": "iterations", "refId": "A" }]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 200,
+      "title": "HTTP Request Performance",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "ms", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line", "pointSize": 5, "showPoints": "auto" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "id": 10,
+      "title": "HTTP Request Duration (p50 / p90 / p95 / p99)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(k6_http_req_duration_seconds_bucket[30s])) * 1000", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.90, rate(k6_http_req_duration_seconds_bucket[30s])) * 1000", "legendFormat": "p90", "refId": "B" },
+        { "expr": "histogram_quantile(0.95, rate(k6_http_req_duration_seconds_bucket[30s])) * 1000", "legendFormat": "p95", "refId": "C" },
+        { "expr": "histogram_quantile(0.99, rate(k6_http_req_duration_seconds_bucket[30s])) * 1000", "legendFormat": "p99", "refId": "D" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "reqps", "custom": { "lineWidth": 2, "fillOpacity": 20, "drawStyle": "line", "stacking": { "mode": "none" } } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "id": 11,
+      "title": "Request Rate (RPS) by URL",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "rate(k6_http_reqs_total{url=~\".*queue.*\"}[30s])", "legendFormat": "{{url}}", "refId": "A" },
+        { "expr": "rate(k6_http_reqs_total{url=~\".*orders.*\"}[30s])", "legendFormat": "{{url}}", "refId": "B" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "id": 12,
+      "title": "VUs over Time",
+      "type": "timeseries",
+      "targets": [{ "expr": "k6_vus", "legendFormat": "VUs", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short", "custom": { "lineWidth": 2, "fillOpacity": 20, "drawStyle": "bars", "stacking": { "mode": "normal" } } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "id": 13,
+      "title": "HTTP Status Codes",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "increase(k6_http_reqs_total{expected_response=\"true\"}[30s])", "legendFormat": "success", "refId": "A" },
+        { "expr": "increase(k6_http_reqs_total{expected_response=\"false\"}[30s])", "legendFormat": "failure", "refId": "B" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+      "id": 300,
+      "title": "Queue Custom Metrics - Enter",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "ms", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+      "id": 20,
+      "title": "Queue Enter Duration (p50 / p95 / p99)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(k6_enter_duration_ms_bucket[30s]))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, rate(k6_enter_duration_ms_bucket[30s]))", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, rate(k6_enter_duration_ms_bucket[30s]))", "legendFormat": "p99", "refId": "C" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "percentunit", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+      "id": 21,
+      "title": "Enter Success Rate",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "k6_enter_success_rate", "legendFormat": "success rate", "refId": "A" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 },
+      "id": 400,
+      "title": "Queue Custom Metrics - Polling",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "ms", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "id": 30,
+      "title": "Polling Duration - Small vs Large Queue",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.95, rate(k6_poll_small_queue_ms_bucket[30s]))", "legendFormat": "small queue p95", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, rate(k6_poll_large_queue_ms_bucket[30s]))", "legendFormat": "large queue p95", "refId": "B" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short", "custom": { "lineWidth": 2, "fillOpacity": 20, "drawStyle": "bars", "stacking": { "mode": "normal" } } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "id": 31,
+      "title": "Polling Tier Distribution",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "increase(k6_poll_tier_1s_total[30s])", "legendFormat": "tier 1s (1~100)", "refId": "A" },
+        { "expr": "increase(k6_poll_tier_3s_total[30s])", "legendFormat": "tier 3s (101~1000)", "refId": "B" },
+        { "expr": "increase(k6_poll_tier_5s_total[30s])", "legendFormat": "tier 5s (1001+)", "refId": "C" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 40 },
+      "id": 500,
+      "title": "Queue Custom Metrics - Batch Size Benchmark",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "ms", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 41 },
+      "id": 40,
+      "title": "Token Receive Time (per user)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(k6_token_receive_time_ms_bucket[30s]))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, rate(k6_token_receive_time_ms_bucket[30s]))", "legendFormat": "p95", "refId": "B" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 41 },
+      "id": 41,
+      "title": "Actual TPS (measured)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(k6_actual_tps_bucket[30s]))", "legendFormat": "actual TPS (p50)", "refId": "A" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 49 },
+      "id": 42,
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Tokens Received",
+      "type": "stat",
+      "targets": [{ "expr": "k6_total_tokens_received_total", "legendFormat": "received", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 49 },
+      "id": 43,
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Not Drained (timeout)",
+      "type": "stat",
+      "targets": [{ "expr": "k6_queue_not_drained_count_total", "legendFormat": "not drained", "refId": "A" }]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 53 },
+      "id": 600,
+      "title": "Queue Custom Metrics - E2E Flow",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "ms", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 54 },
+      "id": 50,
+      "title": "E2E Stage Durations (p95)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.95, rate(k6_e2e_enter_duration_ms_bucket[30s]))", "legendFormat": "enter", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, rate(k6_e2e_wait_duration_ms_bucket[30s]))", "legendFormat": "wait (queue→token)", "refId": "B" },
+        { "expr": "histogram_quantile(0.95, rate(k6_e2e_order_duration_ms_bucket[30s]))", "legendFormat": "order", "refId": "C" },
+        { "expr": "histogram_quantile(0.95, rate(k6_e2e_total_duration_ms_bucket[30s]))", "legendFormat": "total", "refId": "D" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "percentunit", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 54 },
+      "id": 51,
+      "title": "E2E Success Rates",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "k6_e2e_enter_success", "legendFormat": "enter", "refId": "A" },
+        { "expr": "k6_e2e_token_received", "legendFormat": "token received", "refId": "B" },
+        { "expr": "k6_e2e_order_success", "legendFormat": "order", "refId": "C" },
+        { "expr": "k6_e2e_full_flow_success", "legendFormat": "full flow", "refId": "D" },
+        { "expr": "k6_e2e_token_within_ttl", "legendFormat": "within TTL", "refId": "E" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 62 },
+      "id": 52,
+      "title": "E2E Poll Count per User",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(k6_e2e_poll_count_bucket[30s]))", "legendFormat": "p50", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, rate(k6_e2e_poll_count_bucket[30s]))", "legendFormat": "p95", "refId": "B" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 62 },
+      "id": 53,
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Orders Created",
+      "type": "stat",
+      "targets": [{ "expr": "k6_e2e_order_created_total", "legendFormat": "created", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 62 },
+      "id": 54,
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Token Expired",
+      "type": "stat",
+      "targets": [{ "expr": "k6_e2e_token_expired_count_total", "legendFormat": "expired", "refId": "A" }]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 70 },
+      "id": 700,
+      "title": "Queue Custom Metrics - Token Concurrency",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "percentunit", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 71 },
+      "id": 60,
+      "title": "Double Order Test - Success Rates",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "k6_double_order_first_success", "legendFormat": "1st order success", "refId": "A" },
+        { "expr": "k6_double_order_second_success", "legendFormat": "2nd order success", "refId": "B" },
+        { "expr": "k6_double_order_exactly_one", "legendFormat": "exactly one", "refId": "C" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "percentunit", "custom": { "lineWidth": 2, "fillOpacity": 10, "drawStyle": "line" } },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 71 },
+      "id": 61,
+      "title": "No-Token & Flag-Off Tests",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "k6_no_token_order_blocked", "legendFormat": "no-token blocked", "refId": "A" },
+        { "expr": "k6_flag_off_order_success", "legendFormat": "flag-off success", "refId": "B" }
+      ]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 79 },
+      "id": 62,
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "title": "Both Orders Succeeded (BUG)",
+      "type": "stat",
+      "targets": [{ "expr": "k6_double_order_both_success_total", "legendFormat": "both success", "refId": "A" }]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["k6", "queue", "load-test"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "timezone": "Asia/Seoul",
+  "title": "k6 Load Test - Queue System",
+  "uid": "k6-queue-load-test",
+  "version": 1
+}

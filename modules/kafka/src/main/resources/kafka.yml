@@ -1,0 +1,47 @@
+spring:
+  kafka:
+    bootstrap-servers: ${BOOTSTRAP_SERVERS}
+    client-id: ${spring.application.name}
+    properties:
+        spring.json.add.type.headers: false # json serialize off
+        request.timeout.ms: 20000
+        retry.backoff.ms: 500
+        auto:
+          create.topics.enable: false
+          register.schemas: false
+          offset.reset: latest
+        use.latest.version: true
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all                    # 모든 브로커 복제본이 저장 확인해야 성공으로 간주 (유실 방지)
+      retries: 3
+      properties:
+        enable.idempotence: true   # 네트워크 재시도로 중복 전송되어도 Kafka가 1번만 저장
+    consumer:
+      group-id: hypeline-default-consumer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+      properties:
+        enable-auto-commit: false
+    listener:
+      ack-mode: manual
+
+---
+spring.config.activate.on-profile: local, test
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:19092
+    admin:
+      properties:
+        bootstrap.servers: kafka:9092
+
+---
+spring.config.activate.on-profile: dev
+
+---
+spring.config.activate.on-profile: qa
+
+---
+spring.config.activate.on-profile: prd

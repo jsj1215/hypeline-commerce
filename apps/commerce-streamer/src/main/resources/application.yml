@@ -1,0 +1,29 @@
+server:
+  port: 8090
+  shutdown: graceful
+
+spring:
+  application:
+    name: commerce-streamer
+  profiles:
+    active: local
+  config:
+    import:
+      - jpa.yml
+      - redis.yml
+      - kafka.yml
+      - logging.yml
+      - monitoring.yml
+  kafka:
+    consumer:
+      group-id: hypeline-streamer
+
+management:
+  server:
+    port: 8091
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local, test
