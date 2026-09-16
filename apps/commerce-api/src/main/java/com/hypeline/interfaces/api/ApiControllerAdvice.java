@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.hypeline.support.error.CoreException;
 import com.hypeline.support.error.ErrorType;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -103,6 +105,25 @@ public class ApiControllerAdvice {
         } else {
             return failureResponse(ErrorType.BAD_REQUEST, null);
         }
+    }
+
+    // 요청 본문 검증 실패. 어떤 필드가 왜 틀렸는지 그대로 돌려준다.
+    @ExceptionHandler
+    public ResponseEntity<ApiResponse<?>> handleBadRequest(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> String.format("'%s': %s", error.getField(), error.getDefaultMessage()))
+                .collect(Collectors.joining(", "));
+        return failureResponse(ErrorType.BAD_REQUEST, message.isBlank() ? null : message);
+    }
+
+    // 파라미터·경로 변수 검증 실패.
+    @ExceptionHandler
+    public ResponseEntity<ApiResponse<?>> handleBadRequest(ConstraintViolationException e) {
+        String message = e.getConstraintViolations().stream()
+                .map(violation -> String.format("'%s': %s",
+                        violation.getPropertyPath(), violation.getMessage()))
+                .collect(Collectors.joining(", "));
+        return failureResponse(ErrorType.BAD_REQUEST, message.isBlank() ? null : message);
     }
 
     @ExceptionHandler
